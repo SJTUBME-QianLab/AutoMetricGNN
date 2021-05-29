@@ -185,7 +185,7 @@ class AMGNN(nn.Module):
         if self.metric_network == 'gnn':
             assert (self.args.train_N_way == self.args.test_N_way)
             num_inputs = self.emb_size + self.args.train_N_way
-            print('feature:',num_inputs)
+            print('Features:',num_inputs)
             # input('0_0')
             self.gnn_obj = gnn_w.GNN_nl(args, num_inputs, nf=96, J=1)
 
