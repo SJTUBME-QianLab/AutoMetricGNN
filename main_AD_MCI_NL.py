@@ -19,10 +19,18 @@ import argparse
 import torch.optim as optim
 from torch.autograd import Variable
 import torch.nn.functional as F
+
 from utils import io_utils
 import pickle
 import os
 import time
+import textwrap
+from pathlib import Path
+
+
+
+RESULT_PATH = Path("result/")
+DATA_PATH = Path("data/")
 
 parser = argparse.ArgumentParser(description='AMGNN')
 parser.add_argument('--metric_network', type=str, default='gnn', metavar='N',
@@ -303,12 +311,12 @@ if __name__ =='__main__':
 
     timedata = time.strftime("%F")
     name = timedata + '-3-classe'
-    save_path = 'result\\{}'.format(name)
+    save_path = RESULT_PATH / name
 
-    if name not in os.listdir('result\\'):
+    if name not in os.listdir(RESULT_PATH):
         os.makedirs(save_path)
-    io = io_utils.IOStream(save_path + '\\run.log')
-    print('the result will be saved in :', save_path)
+    io = io_utils.IOStream(RESULT_PATH / 'run.log')
+    print('The result will be saved in :', save_path)
     setup_seed(args.random_seed)
 
     amgnn = models.create_models(args, cnn_dim1=2)
@@ -328,7 +336,7 @@ if __name__ =='__main__':
     test_acc = 0
     for batch_idx in range(args.iterations):
 
-        root = 'data\\AD_3_CLASS_TRAIN.pkl'
+        root = DATA_PATH / 'AD_3_CLASS_TRAIN.pkl'
         da = Generator(root, keys=['CN', 'MCI','AD'])
         data = da.get_task_batch(batch_size=args.batch_size_train, n_way=args.train_N_way,
                                  num_shots=args.train_N_shots, unlabeled_extra=args.unlabeled_extra, cuda=args.cuda)
@@ -359,17 +367,16 @@ if __name__ =='__main__':
         if (batch_idx + 1) % args.log_interval == 0:
 
             test_samples = 320
-            test_root = 'data\\AD_3_CLASS_TEST.pkl'
+            test_root = DATA_PATH / 'AD_3_CLASS_TEST.pkl'
             test_acc_aux, test_loss_ = test_one_shot(args, 0, test_root, model=[amgnn, softmax_module],
                                                      test_samples=test_samples, partition='test',
-                                                     io_path=save_path + '//run.log')
+                                                     io_path=save_path / 'run.log')
             amgnn.train()
 
             if test_acc_aux is not None and test_acc_aux >= test_acc:
                 test_acc = test_acc_aux
                 # val_acc = val_acc_aux
-                modelpath = 'result//{}//'.format(name)
-                torch.save(amgnn, modelpath + 'amgnn' + '_best_model.pkl')
+                torch.save(amgnn, save_path / 'amgnn_best_model.pkl')
             if args.dataset == 'AD':
                 io.cprint("Best test accuracy {:.4f} \n".format(test_acc))
 
