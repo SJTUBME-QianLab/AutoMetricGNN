@@ -234,7 +234,7 @@ def train_batch(model, data):
 def test_one_shot(args, fold,test_root, model, test_samples=50, partition='test',io_path= 'run.log'):
     io = io_utils.IOStream(io_path)
 
-    io.cprint('\n**** TESTING BEGIN ***' )
+    io.cprint('\n*** ITERATION BEGIN ***' )
     root = test_root
     loader = Generator(root,keys = ['CN','MCI','AD'])
     [amgnn, softmax_module] = model
@@ -297,8 +297,14 @@ def test_one_shot(args, fold,test_root, model, test_samples=50, partition='test'
     io.cprint('real_label:  '+str(real_all))
     io.cprint('pre_all:  '+str(pre_all))
     io.cprint('pre_all_num:  '+str(pre_all_num))
-    io.cprint('{} correct from {} \tAccuracy: {:.3f}%)'.format(correct, total, 100.0 * correct / total))
-    io.cprint('*** TEST FINISHED ***\n'.format(correct, total, 100.0 * correct / total))
+
+    message = textwrap.dedent("""
+    *** ITERATION FINISHED ***
+    Correct: {}
+    Total: {}
+    Accuracy: {:.3f}%
+    """.format(correct, total, 100.0 * (correct / total)))
+    io.cprint(message)
 
     amgnn.train()
 
